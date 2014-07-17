@@ -16,6 +16,17 @@ function validateBuildPayload(buildPayload) {
 }
 
 /**
+ * @param {Array} payloads array of build payloads
+ * @return {Array} buildPayload
+ */
+function validateBuildPayloads(payloads) {
+  return payloads.map(function(buildRes) {
+    validateBuildPayload(buildRes);
+    return buildRes;
+  });
+}
+
+/**
  * @param {Object} vcsPayload
  * @return {Object} vcsPayload
  */
@@ -52,7 +63,7 @@ function buildChangePayload(vcsPayload) {
   .then(validateVcsPayload)
   .then(this.validateChange.bind(this))
   .then(this.buildChange.bind(this))
-  .then(validateBuildPayload);
+  .then(validateBuildPayloads);
 }
 
 /**
@@ -68,7 +79,7 @@ function buildProposalPayload(vcsPayload) {
   .then(validateVcsPayload)
   .then(this.validateProposal.bind(this))
   .then(this.buildProposal.bind(this))
-  .then(validateBuildPayload);
+  .then(validateBuildPayloads);
 }
 
 /**

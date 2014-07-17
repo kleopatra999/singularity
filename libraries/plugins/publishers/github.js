@@ -2,10 +2,7 @@
 
 var GitHubApi = require('github'),
     q = require('q'),
-    PublisherPayload = require('../../payloads/publisher').PublisherPayload;
-
-function logMsg(message) { return '[publisher.github] ' + message; }
-// function throwError(message) { throw logMsg(message); }
+    pendingStats = ['queued', 'building'];
 
 /**
  * MUST BIND `this`
@@ -22,9 +19,7 @@ function logMsg(message) { return '[publisher.github] ' + message; }
  * @param description {String}
  */
 function createGithubStatus(owner, repo, sha, state, targetUrl, description) {
-
-  logMsg('creating status ' + state + ' for sha ' + sha);
-
+  this.info('creating status ' + state + ' for sha ' + sha);
   var hash = {
     user: owner,
     repo: repo,
@@ -33,7 +28,6 @@ function createGithubStatus(owner, repo, sha, state, targetUrl, description) {
     target_url: targetUrl,
     description: description
   };
-
   return q.ninvoke(this._api.statuses, 'create', hash)
   .then(function(response) {
     return response;
@@ -41,16 +35,16 @@ function createGithubStatus(owner, repo, sha, state, targetUrl, description) {
   .catch(this.error);
 }
 
-function buildPublisherPayload(payload, githubResponse) {
-  return new PublisherPayload({
-    repo: payload.data.repo,
-    owner: payload.data.owner,
-    sha: payload.data.sha,
-    status: payload.data.status,
-    buildLink: payload.data.buildLink,
-    type: (githubResponse.state ? 'statusUpdate' : 'comment'),
-    publishedMessage: githubResponse.description
-  });
+function buildStatusPayload(payload) {
+  return {
+    owner: payload.repo.split('/')[0],
+    repo: payload.repo.split('/')[1],
+    sha: payload.revision,
+    status: payload.status,
+    buildLink: payload.link,
+    type: 'statusUpdate',
+    publishedMessage: payload.message || ''
+  };
 }
 
 module.exports = require('../plugin').extend({
@@ -71,21 +65,30 @@ module.exports = require('../plugin').extend({
   },
 
   createStatus: function(payload) {
-    var state = payload.data.status;
-    if (state === 'queued' || state === 'building') {
-      state = 'pending';
-    }
+    var state = payload.status,
+        pubPayload;
 
-    return createGithubStatus.call(this,
-             payload.data.owner,
-             payload.data.repo,
-             payload.data.sha,
-             state,
-             payload.data.buildLink,
-             payload.data.message
-           )
-           .then(buildPublisherPayload.bind(this, payload))
-           .catch(this.error);
+    state = (~pendingStats.indexOf(payload.status)) ?
+    'pending' : payload.status;
+
+    return q(payload)
+    .then(buildStatusPayload.bind(this))
+    .then(function(publisherPayload) {
+      pubPayload = publisherPayload;
+      return createGithubStatus.call(
+        this,
+        publisherPayload.owner,
+        publisherPayload.repo,
+        publisherPayload.sha,
+        state,
+        publisherPayload.buildLink,
+        publisherPayload.publishedMessage
+      );
+    }.bind(this))
+    .then(function(response) {
+      pubPayload.publishedMessage = response.description;
+      return pubPayload;
+    });
   }
 
 //

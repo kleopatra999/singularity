@@ -91,6 +91,7 @@ function buildPayloadFromVcs(project, vcsPayload, host) {
       host: host,
       project: project.project,
       repo: vcsPayload.repo,
+      revision: vcsPayload.after,
       status: 'queued',
       type: 'queued',
       triggeringPayload: vcsPayload
@@ -109,6 +110,7 @@ function createJobParams(buildPayload, project, vcsPayload) {
       token: project.project_token || '',
       cause: vcsPayload.change,
 
+      repo: vcsPayload.repo,
       buildId: buildPayload.buildId,
       host: buildPayload.host,
       baseUrl: vcsPayload.repo_url,
@@ -214,12 +216,12 @@ module.exports = require('../plugin').extend({
   createUpdatePayload: function(httpPayload) {
     return q({
         buildId: httpPayload.build.parameters.buildId,
-        repo: httpPayload.repo,
+        repo: httpPayload.build.parameters.repo,
+        revision: httpPayload.build.parameters.after,
         project: httpPayload.name,
-        cause: httpPayload.build.parameters.cause,
+        cause: 'build status update',
         status: this._determineBuildStatus(httpPayload),
-        link: this.config.protocol + '://' + this.config.host + '/' +
-              httpPayload.build.url + 'consoleFull',
+        link: httpPayload.build.full_url + 'consoleFull',
         host: httpPayload.build.parameters.host,
         artifacts: httpPayload.build.artifacts,
         type: this._determineBuildStatus(httpPayload),

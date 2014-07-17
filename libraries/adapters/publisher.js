@@ -28,20 +28,20 @@ function validatePublisherPayload(publisherPayload) {
  */
 function setStatusMessage(buildPayload) {
   switch (buildPayload.status) {
-  case 'queued':
-      buildPayload.message = 'job has been added to queue';
+    case 'queued':
+      buildPayload.message = 'Build Queued.';
       break;
     case 'building':
-      buildPayload.message = 'currently running';
+      buildPayload.message = 'Building...';
       break;
     case 'success':
-      buildPayload.message = 'successfully built';
+      buildPayload.message = 'Singularity Build Succeeded.';
       break;
     case 'failure':
-      buildPayload.message = 'failed to build';
+      buildPayload.message = 'Build Failed.';
       break;
     case 'error':
-      buildPayload.message = 'There was an error trying to test this pr';
+      buildPayload.message = 'Error Building.';
       break;
     default:
       // TODO: throw error

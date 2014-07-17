@@ -12,6 +12,7 @@ module.exports.BuildPayload = require('./payload').extend({
       'link',
       'project',
       'repo',
+      'revision',
       'status',
       'triggeringPayload'
   ],

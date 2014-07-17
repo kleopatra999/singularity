@@ -68,9 +68,8 @@ describe('adapters/publisher', function() {
       artifacts: '',
       buildId: 302,
       link: 'http://build-server/302',
-      owner: 'owner',
-      repo: 'test',
-      sha: '1234sdf',
+      repo: 'owner/test',
+      revision: '1234sdf',
       host: 'build-host',
       project: 'some-project',
       type: '',
@@ -98,35 +97,35 @@ describe('adapters/publisher', function() {
       it('queued status', function() {
         buildPayload.status = 'queued';
 
-        publishedWithMessage(buildPayload, 'job has been added to queue')
+        publishedWithMessage(buildPayload, 'Build Queued.')
         .done();
       });
 
       it('building status', function() {
         buildPayload.status = 'building';
 
-        publishedWithMessage(buildPayload, 'currently running')
+        publishedWithMessage(buildPayload, 'Building...')
         .done();
       });
 
       it('success status', function() {
         buildPayload.status = 'success';
 
-        publishedWithMessage(buildPayload, 'successfully built')
+        publishedWithMessage(buildPayload, 'Singularity Build Succeeded.')
         .done();
       });
 
       it('failure status', function() {
         buildPayload.status = 'failure';
 
-        publishedWithMessage(buildPayload, 'failed to build')
+        publishedWithMessage(buildPayload, 'Build Failed.')
         .done();
       });
 
       it('error status', function() {
         buildPayload.status = 'error';
 
-        publishedWithMessage(buildPayload, 'There was an error trying to test this pr')
+        publishedWithMessage(buildPayload, 'Error Building.')
         .done();
       });
 
