@@ -21,7 +21,7 @@ Everything else (API endpoints) can be found in [the wiki](https://github.com/be
 - a LOT more logging (that's actually useful)
 - **tests. actual. tests.**
 
-###Installing && Running
+###Running
 
 We use [`forever`](https://github.com/nodejitsu/forever) to keep this process alive.
 
@@ -35,7 +35,14 @@ forever start server.js
 ###In Progress!
 - better structuring, routing, refactoring middleware use (moving to Flatiron? Using NBD.js!)
 - NSQ Daemon / Subscribing! So that configuration is even more scalable & that plugins even easier to write.
-
-###To Come:
-
 - support for multiple organizations
+
+###TO COME && DISCLAIMER:
+
+Please check out the [`overhaul`](https://github.com/behance/singularity/tree/overhaul) branch for the rewrite of this application! It can already take Github event payloads, check to see if the event has a status associated with it, trigger a build, mark PRs (i.e.: SHAs) with build results, retest via `issue_comment`...**all without a database!**
+
+Only patches will be made to the current `master` branch. All other efforts / resources will be put towards achieving parity between the `master` & `overhaul` branches.
+
+###Contributing
+
+Feel free to contribute! Simply open up a PR and someone will review and, if up to our standards, merge.
