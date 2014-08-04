@@ -1,22 +1,42 @@
 {
-  "log": {
-      "console": {
-          "level": "debug",
-          "colorize": true
-      }
-  },
-  "vcs": {
-      "github": {
-          "ignore_statuses": true,
-          "auth": {
-              "username": "CI_USER_GITHUB_NAME",
-              "token": "OAUTH_TOKEN_FOR_CI_USER",
-              "type": "oauth"
-          },
-          "repos": [
-              "awsome_org_one/repo_one",
-              "awsome_org_two/repo_two"
-          ]
-      }
-  }
+    "log": {
+        "console": {
+            "level": "debug",
+            "colorize": true
+        }
+    },
+    "build": {
+        "jenkins": {
+            "protocol" : "http",
+            "host" : "bejankins.foo.bar.com:8080",
+            "auth": {
+                "project_token": "GLOBAL_TOKEN_FALL_BACK",
+                "user": "JENKINS_USER",
+                "password": "JENKINS_USER_PASSWORD"
+            },
+            "projects": {
+                "awsome_org_two/repo_one": "jenkins_project",
+                "awsome_org_one/repo_two": {
+                    "proposal": {
+                        "project_token": "project_specific_token",
+                        "project": "some_other_jenkins_project"
+                    }
+                }
+            }
+        }
+    },
+    "vcs": {
+        "github": {
+            "ignore_statuses": true,
+            "auth": {
+                "username": "CI_USER_GITHUB_NAME",
+                "token": "OAUTH_TOKEN_FOR_CI_USER",
+                "type": "oauth"
+            },
+            "repos": [
+                "awsome_org_one/repo_one",
+                "awsome_org_two/repo_two"
+            ]
+        }
+    }
 }
