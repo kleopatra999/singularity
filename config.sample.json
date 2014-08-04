@@ -15,12 +15,21 @@
                 "password": "JENKINS_USER_PASSWORD"
             },
             "projects": {
-                "awsome_org_two/repo_one": "jenkins_project",
-                "awsome_org_one/repo_two": {
-                    "proposal": {
-                        "project_token": "project_specific_token",
-                        "project": "some_other_jenkins_project"
-                    }
+                "repo1": "invoked_for_all_changes_in_repo1",
+                "repo2": {
+                    "project_token": "repo2project_token",
+                    "change": {
+                        "project": "change_project_for_repo2"
+                    },
+                    "proposal": [
+                        {
+                            "project": "project1_for_repo2_propsals"
+                        },
+                        {
+                            "project": "special_proposal_project_for_repo2",
+                            "project_token": "project_token_for_THIS_project"
+                        }
+                    ]
                 }
             }
         }
