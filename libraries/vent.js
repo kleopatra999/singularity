@@ -13,9 +13,6 @@ function logPrepend(type, name) {
   return '[' + type + '.' + name + '] ';
 }
 
-// vent: something turns a bunch of knobs
-// ...and things just keep coming out
-// ...of all the...holes...? :|
 module.exports = require('nbd/Class').extend({
   init: function(option) {
     if (!this.objectType) {
@@ -24,7 +21,8 @@ module.exports = require('nbd/Class').extend({
     if (!this.name) {
       throw 'No adapter name defined';
     }
-    this.config = option;
+    // yes, I want a deep copy, not a friggen reference
+    this.config = JSON.parse(JSON.stringify(option || {}));
     this.log = this.log || logger;
     this.info = this.info.bind(this);
     this.debug = this.debug.bind(this);
