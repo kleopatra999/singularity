@@ -77,12 +77,10 @@ function validateTrigger(trigger) {
 /**
  * @module EventMapper
  */
-module.exports = require('./vent').extend({
-  objectType: 'core_object',
+module.exports = require('./core_component').extend({
   name: 'event_mapper',
 
   init: function(option) {
-    this.log = app.log.get('console');
     this._super(option);
     this.react = this.react.bind(this);
   },

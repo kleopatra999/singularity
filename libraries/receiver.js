@@ -61,7 +61,14 @@ function dispatchRoute(route) {
   app.router.on.apply(app.router, route);
 }
 
-module.exports = require('nbd/Class').extend({
+module.exports = require('./core_component').extend({
+  name: 'receiver',
+
+  init: function(option) {
+    this._super(option);
+    this.buildRoutes = this.buildRoutes.bind(this);
+  },
+
   buildRoutes: function(path, routes, eventMapper) {
     if (!Array.isArray(routes)) {
       routes = [routes];
