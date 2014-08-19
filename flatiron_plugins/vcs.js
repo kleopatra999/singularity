@@ -9,6 +9,7 @@ module.exports = plugin = {
   attach: function(options) {
     this.vcs = new Vcs(options);
     this.vcs.log = this.log.get('console');
+    this.vcs.registerDefaultTriggers();
     this.vcs.attachConfigPlugins();
   },
 

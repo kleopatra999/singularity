@@ -9,6 +9,7 @@ module.exports = plugin = {
   attach: function(options) {
     this.db = new Db(options);
     this.db.log = this.log.get('console');
+    this.db.registerDefaultTriggers();
     this.db.attachConfigPlugins();
   },
 

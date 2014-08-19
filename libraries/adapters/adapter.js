@@ -91,6 +91,7 @@ module.exports = require('../event_reactor').extend({
     this._super(option);
     this.plugins = [];
     this.executeInPlugins = this.executeInPlugins.bind(this);
+    this._handleConfigRequest = this._handleConfigRequest.bind(this);
     this.setChannel(this.name);
   },
 
@@ -165,6 +166,10 @@ module.exports = require('../event_reactor').extend({
     }.bind(this));
   },
 
+  registerDefaultTriggers: function() {
+    this._registerTrigger('config', 'request.*', this._handleConfigRequest);
+  },
+
   /**
    * @param {Object} cfg A cfg object with a 'plugin' property to read
    * @return {Array} string names of plugins that this adapter *should*
@@ -178,5 +183,9 @@ module.exports = require('../event_reactor').extend({
     return Object.keys(cfg).filter(function(key) {
       return key !== 'plugin';
     });
+  },
+
+  _handleConfigRequest: function(data) {
+    this.debug('config request received', this.logForObject(data));
   }
 });

@@ -9,6 +9,7 @@ module.exports = plugin = {
   attach: function(options) {
     this.publisher = new Publisher(options);
     this.publisher.log = this.log.get('console');
+    this.publisher.registerDefaultTriggers();
     this.publisher.attachConfigPlugins();
   },
 
