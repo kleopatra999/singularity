@@ -43,7 +43,7 @@ function requestWrapper(route) {
  */
 function attachRoute(path, route, eventHandler) {
   var method = route.method || 'get';
-  this.info('creating route', { path: path, method: method });
+  this.debug('creating route', { path: path, method: method });
   return q.resolve([
     method,
     path,
