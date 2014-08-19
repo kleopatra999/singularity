@@ -23,7 +23,9 @@ module.exports = function(type, fields) {
   var configRoute = function(request) {
     return q([request, fields])
     .spread(validateFields)
-    .then(function() { return ['config.' + type, request]; })
+    .then(function() {
+      return ['config.request.' + type, request];
+    })
     .spread(payload.preparePayload);
   }
 
