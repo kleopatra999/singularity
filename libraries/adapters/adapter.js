@@ -1,7 +1,6 @@
 "use strict";
 
-var postal = require('postal'),
-    q = require('q'),
+var q = require('q'),
     path = require('path'),
     fs = require('fs');
 
@@ -77,13 +76,8 @@ function loadFromPath(plugin, path, config) {
   this.plugins.push(instance);
 }
 
-module.exports = require('../vent').extend({
-  channel: undefined,
+module.exports = require('../event_reactor').extend({
   objectType: 'adapter',
-
-  setChannel: function(channelName) {
-    this.channel = postal.channel(channelName);
-  },
 
   /**
    * {@inheritDoc}
@@ -97,22 +91,7 @@ module.exports = require('../vent').extend({
     this._super(option);
     this.plugins = [];
     this.executeInPlugins = this.executeInPlugins.bind(this);
-    this.publishPayload = this.publishPayload.bind(this);
-    this.setChannel = this.setChannel.bind(this);
     this.setChannel(this.name);
-  },
-
-  publishPayload: function(payload) {
-    if (!payload) {
-      this.debug('no payload given, ignoring');
-      return;
-    }
-    if (!payload.type) {
-      this.debug('payload has no type!', payload);
-      return;
-    }
-    this.debug('publishing', this.logForObject(payload));
-    this.channel.publish(payload.type, payload);
   },
 
   /**
