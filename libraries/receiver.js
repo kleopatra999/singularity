@@ -49,7 +49,7 @@ function attachRoute(path, route, eventHandler) {
     path,
     function() {
       requestWrapper.call(this, route)
-      .then(eventHandler.react);
+      .then(eventHandler.mapEvent);
     }
   ]);
 }

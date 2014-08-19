@@ -82,10 +82,10 @@ module.exports = require('./core_component').extend({
 
   init: function(option) {
     this._super(option);
-    this.react = this.react.bind(this);
+    this.mapEvent = this.mapEvent.bind(this);
   },
 
-  react: function(data) {
+  mapEvent: function(data) {
     return packageMeta(data)
     .then(publishEvents);
   },
