@@ -1,7 +1,7 @@
 "use strict";
 
 var Publisher = require('../libraries/adapters/publisher'),
-plugin;
+    plugin;
 
 module.exports = plugin = {
   name: 'Publisher',

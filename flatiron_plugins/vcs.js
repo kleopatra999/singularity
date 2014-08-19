@@ -1,7 +1,7 @@
 "use strict";
 
 var plugin,
-Vcs = require('../libraries/adapters/vcs');
+    Vcs = require('../libraries/adapters/vcs');
 
 module.exports = plugin = {
   name: 'VCS',
