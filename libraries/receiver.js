@@ -42,8 +42,10 @@ function requestWrapper(route) {
  * @return [{Object}] router arguments object
  */
 function attachRoute(path, route, eventHandler) {
+  var method = route.method || 'get';
+  this.info('creating route', { path: path, method: method });
   return q.resolve([
-    route.method || 'get',
+    method,
     path,
     function() {
       requestWrapper.call(this, route)
@@ -76,9 +78,9 @@ module.exports = require('./core_component').extend({
 
     q.all(
       routes.map(function(route) {
-        return attachRoute(path, route, eventMapper)
+        return attachRoute.call(this, path, route, eventMapper)
         .then(dispatchRoute);
-      })
+      }, this)
     )
     .done();
   }
