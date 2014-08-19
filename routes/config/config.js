@@ -1,5 +1,5 @@
 var q = require('q'),
-    payload = require('../libraries/payloads/http'),
+    payload = require('../../libraries/payloads/http'),
     requiredFields = ['repository', 'project'];
 
 function validateFields(request, fields) {
@@ -15,7 +15,7 @@ function validateFields(request, fields) {
         };
       }
       return request.body[field];
-    });
+    })
   );
 }
 

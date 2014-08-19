@@ -42,8 +42,10 @@ function requestWrapper(route) {
  * @return [{Object}] router arguments object
  */
 function attachRoute(path, route, eventHandler) {
+  var method = route.method || 'get';
+  this.debug('creating route', { path: path, method: method });
   return q.resolve([
-    route.method || 'get',
+    method,
     path,
     function() {
       requestWrapper.call(this, route)
@@ -61,7 +63,14 @@ function dispatchRoute(route) {
   app.router.on.apply(app.router, route);
 }
 
-module.exports = require('nbd/Class').extend({
+module.exports = require('./core_component').extend({
+  name: 'receiver',
+
+  init: function(option) {
+    this._super(option);
+    this.buildRoutes = this.buildRoutes.bind(this);
+  },
+
   buildRoutes: function(path, routes, eventMapper) {
     if (!Array.isArray(routes)) {
       routes = [routes];
@@ -69,9 +78,9 @@ module.exports = require('nbd/Class').extend({
 
     q.all(
       routes.map(function(route) {
-        return attachRoute(path, route, eventMapper)
+        return attachRoute.call(this, path, route, eventMapper)
         .then(dispatchRoute);
-      })
+      }, this)
     )
     .done();
   }

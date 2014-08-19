@@ -1,7 +1,7 @@
 "use strict";
 
 var BuildSys = require('../libraries/adapters/build'),
-plugin;
+    plugin;
 
 module.exports = plugin = {
   name: 'Build System',

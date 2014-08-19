@@ -74,14 +74,20 @@ var Singularity = require('nbd/Class').extend({
 
   route: function(routes) {
     if (routes == null) { return; }
+    if (!Array.isArray(routes)) { return; }
 
-    Object.keys(routes)
-    .forEach(function(path) {
-      this.receiver.buildRoutes(
-        path,
-        routes[path],
-        this.eventMapper
-      );
+    routes.forEach(function(meta) {
+      var pathRoutes = meta.routes;
+      if (!Array.isArray(pathRoutes)) {
+        pathRoutes = [pathRoutes];
+      }
+      pathRoutes.forEach(function(route) {
+        this.receiver.buildRoutes(
+          meta.path,
+          route,
+          this.eventMapper
+        );
+      }, this);
     }, this);
   },
 
@@ -92,7 +98,6 @@ var Singularity = require('nbd/Class').extend({
   },
 
   injectFlatironPlugins: function(dir) {
-    var self = this;
     return q.ninvoke(fs, 'readdir', dir)
     .then(function(files) {
       files.forEach(function(file) {
@@ -105,16 +110,16 @@ var Singularity = require('nbd/Class').extend({
           ])
         )
         .spread(function(path, name) {
-          self.log.debug(
+          this.log.debug(
             '[flatiron_plugin.load]',
             {name: name, path: path}
           );
           return q.all([path, pluginConfig(name)]);
-        })
+        }.bind(this))
         .spread(appUsePlugin)
-        .catch(self.log.error.bind(self));
-      });
-    })
+        .catch(this.log.error.bind(this));
+      }, this);
+    }.bind(this))
     .done();
   }
 });
