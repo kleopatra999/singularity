@@ -13,14 +13,6 @@ var singularity = require('./libraries/singularity');
 app.start(app.config.get('port'), function() {
   singularity.injectFlatironPlugins(__dirname + '/flatiron_plugins');
   singularity.mapTriggers(require('./default_events'));
-
-  singularity.route({
-    '/build/update': require('./routes/build/update'),
-    '/hook': require('./routes/hook'),
-    '/config': require('./routes/cfg'),
-    '/pull_requests': require('./routes/pull_requests'),
-    '/merge': require('./routes/merge')
-  });
-
+  singularity.route(require('./routes'));
   app.log.info('Listening on port %d', app.config.get('port'));
 });

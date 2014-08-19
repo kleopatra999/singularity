@@ -74,14 +74,20 @@ var Singularity = require('nbd/Class').extend({
 
   route: function(routes) {
     if (routes == null) { return; }
+    if (!Array.isArray(routes)) { return; }
 
-    Object.keys(routes)
-    .forEach(function(path) {
-      this.receiver.buildRoutes(
-        path,
-        routes[path],
-        this.eventMapper
-      );
+    routes.forEach(function(meta) {
+      var pathRoutes = meta.routes;
+      if (!Array.isArray(pathRoutes)) {
+        pathRoutes = [pathRoutes];
+      }
+      pathRoutes.forEach(function(route) {
+        this.receiver.buildRoutes(
+          meta.path,
+          route,
+          this.eventMapper
+        );
+      }, this);
     }, this);
   },
 
