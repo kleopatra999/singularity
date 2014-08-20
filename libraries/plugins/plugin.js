@@ -15,5 +15,12 @@ module.exports = require('../vent').extend({
 
   updateConfig: function(httpPayload) {
     this.debug('not set up to update config', this.logForObject(httpPayload));
+  },
+
+  _createConfigPayload: function() {
+    return {
+      plugin: this.name,
+      config: JSON.parse(JSON.stringify(this.config))
+    };
   }
 });
