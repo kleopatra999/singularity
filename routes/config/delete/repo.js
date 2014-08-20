@@ -1,5 +1,5 @@
 var configRoute = require('../config'),
-    route = configRoute('proposal', ['repository']);
+    route = configRoute('repo', ['repository']);
 
 route.method = "delete";
 module.exports = route;
