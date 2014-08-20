@@ -2,7 +2,36 @@
 
 var q = require('q'),
     path = require('path'),
-    fs = require('fs');
+    fs = require('fs'),
+    configMethodMap = {
+        DELETE: 'removeConfig',
+        POST: 'addConfig',
+        PUT: 'updateConfig'
+    };
+
+function getPluginConfigMethod(httpPayload) {
+  if (!httpPayload.method) {
+    throw 'config http payload has no method';
+  }
+  if (!configMethodMap[httpPayload.method]) {
+    throw 'no plugin method mapped to method: ' + httpPayload.method;
+  }
+  return configMethodMap[httpPayload.method];
+}
+
+/**
+ * MUST BIND `this`
+ * `this` should be a plugin!
+ * This function is meant to be used in the context of a plugin!
+ * See executeInPlugins & _handleConfigRequest
+ */
+function propagateConfig(httpPayload) {
+  return q(httpPayload)
+  .then(getPluginConfigMethod)
+  .then(function(callback) {
+    return this[callback].call(this, httpPayload);
+  }.bind(this));
+}
 
 /**
  * MUST BIND `this`
@@ -73,6 +102,8 @@ function loadFromPath(plugin, path, config) {
   var Klass = require(path),
   instance = new Klass(config);
   instance.log = this.log;
+  // to help with logging
+  instance.objectType = this.name;
   this.plugins.push(instance);
 }
 
@@ -186,6 +217,10 @@ module.exports = require('../event_reactor').extend({
   },
 
   _handleConfigRequest: function(data) {
-    this.debug('config request received', this.logForObject(data));
+    this.debug(
+      'propagating config request to plugins',
+      this.logForObject(data)
+    );
+    this.executeInPlugins(propagateConfig, data);
   }
 });
