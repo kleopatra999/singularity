@@ -237,10 +237,14 @@ module.exports = require('../plugin').extend({
       );
       return this.updateConfig(pl);
     }
-
     this.config.projects[pl.repository] = {};
     this.config.projects[pl.repository][pl.changesetType] = {};
     this.config.projects[pl.repository][pl.changesetType].project = pl.project;
+    this.info(
+      'added config',
+      this.config.projects[pl.repository],
+      { repository: pl.repository}
+    );
 
     return this._createConfigPayload();
   },
@@ -252,7 +256,7 @@ module.exports = require('../plugin').extend({
     if (!this.config.projects[pl.repository]) {
       throw 'No config found for repo: ' + pl.repository;
     }
-
+    this.info('removing config', this.config.projects[pl.repository]);
     delete this.config.projects[pl.repository];
 
     return this._createConfigPayload();
