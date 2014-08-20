@@ -180,6 +180,84 @@ describe('plugins/builders/jenkins', function() {
     });
   });
 
+  describe('#addConfig', function() {
+    var httpPayload, debugSpy, _createCfgPlStub;
+
+    beforeEach(function() {
+      debugSpy = sinonSandbox.spy(instance, 'debug');
+      _createCfgPlStub = sinonSandbox.stub(
+        instance,
+        '_createConfigPayload',
+        function() {}
+      );
+    });
+
+    it('calls update config when repo project exists', function() {
+      var updateConfigStub = sinonSandbox.stub(
+        instance,
+        'updateConfig',
+        function() {}
+      );
+      httpPayload = { repository: 'test_repo_string' };
+      instance.addConfig(httpPayload);
+      expect(updateConfigStub).to.be.calledWith(httpPayload);
+      expect(debugSpy).to.have.been.calledOnce;
+      expect(debugSpy).to.have.been.calledWithMatch(/repo already exists/);
+      expect(_createCfgPlStub).to.not.have.been.called;
+    });
+
+    it('actually updates config', function() {
+      httpPayload = {
+        repository: 'new_repo',
+        project: 'new_repo_project',
+        changesetType: 'change'
+      };
+      instance.addConfig(httpPayload);
+      expect(_createCfgPlStub).to.have.been.calledOnce;
+      expect(instance.config.projects.new_repo).to.exist;
+      expect(instance.config.projects.new_repo).to.deep.equal({
+        change: { project: 'new_repo_project' }
+      });
+    });
+  });
+
+  describe('#removeConfig', function() {
+    var httpPayload, debugSpy, _createCfgPlStub;
+
+    beforeEach(function() {
+      debugSpy = sinonSandbox.spy(instance, 'debug');
+      httpPayload = {
+        repository: 'test_repo_string',
+        changesetType: 'repo'
+      };
+      _createCfgPlStub = sinonSandbox.stub(
+        instance,
+        '_createConfigPayload',
+        function() {}
+      );
+    });
+
+    it('throws when non-repo changesetType received', function() {
+      expect(function() {
+        instance.removeConfig({ changesetType: 'foo' });
+      })
+      .to.throw(/feature not supported/);
+    });
+
+    it('throws when repo DNE', function() {
+      expect(function() {
+        instance.removeConfig({ changesetType: 'repo', repository: 'foo' });
+      })
+      .to.throw(/No config found/);
+    });
+
+    it('deletes configs', function() {
+      instance.removeConfig(httpPayload);
+      expect(_createCfgPlStub).to.have.been.calledOnce;
+      expect(instance.config.projects.test_repo_string).to.equal(undefined);
+    });
+  });
+
   describe('#_determineBuildStatus', function() {
     var httpPayload;
 
