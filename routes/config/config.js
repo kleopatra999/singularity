@@ -19,14 +19,33 @@ function validateFields(request, fields) {
   );
 }
 
+function validateType(type) {
+  if (!~['change', 'proposal'].indexOf(type)) {
+    throw 'Unknown changeset type: ' + type;
+  }
+}
+
 module.exports = function(type, fields) {
   var configRoute = function(request) {
-    return q([request, fields])
+    return q(validateType(type))
+    .thenResolve([request, fields])
     .spread(validateFields)
     .then(function() {
       return ['config.request.' + type, request];
     })
-    .spread(payload.preparePayload);
+    .spread(payload.preparePayload)
+    .then(function(httpPayload) {
+      return q(Object.keys(httpPayload))
+      .then(function(payloadNames) {
+        return q.allSettled(
+          payloadNames.map(function(name) {
+            httpPayload[name].changesetType = type;
+            return httpPayload[name];
+          })
+        );
+      })
+      .thenResolve(httpPayload);
+    });
   }
 
   return configRoute;
