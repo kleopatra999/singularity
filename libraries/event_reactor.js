@@ -21,6 +21,23 @@ module.exports = require('./vent').extend({
     this.channel = postal.channel(channelName);
   },
 
+  publishToChannel: function(payload, channel, subject) {
+    var trace = stackTrace.get();
+    this.debug(
+      'internal publish trigger',
+      {
+          channel: channel,
+          subject: subject,
+          origin: trace[1].getFileName() + ':' + trace[1].getLineNumber()
+      }
+    );
+    postal.publish({
+        channel: channel,
+        subject: subject,
+        data: payload
+    });
+  },
+
   publishPayload: function(payload) {
     if (!payload) {
       this.debug('no payload given, ignoring');
