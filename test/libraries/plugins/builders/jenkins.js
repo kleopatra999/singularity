@@ -181,10 +181,11 @@ describe('plugins/builders/jenkins', function() {
   });
 
   describe('#addConfig', function() {
-    var httpPayload, debugSpy, _createCfgPlStub;
+    var httpPayload, infoStub, debugStub, _createCfgPlStub;
 
     beforeEach(function() {
-      debugSpy = sinonSandbox.spy(instance, 'debug');
+      infoStub = sinonSandbox.stub(instance, 'info');
+      debugStub = sinonSandbox.stub(instance, 'debug');
       _createCfgPlStub = sinonSandbox.stub(
         instance,
         '_createConfigPayload',
@@ -201,8 +202,8 @@ describe('plugins/builders/jenkins', function() {
       httpPayload = { repository: 'test_repo_string' };
       instance.addConfig(httpPayload);
       expect(updateConfigStub).to.be.calledWith(httpPayload);
-      expect(debugSpy).to.have.been.calledOnce;
-      expect(debugSpy).to.have.been.calledWithMatch(/repo already exists/);
+      expect(debugStub).to.have.been.calledOnce;
+      expect(debugStub).to.have.been.calledWithMatch(/repo already exists/);
       expect(_createCfgPlStub).to.not.have.been.called;
     });
 
@@ -213,6 +214,7 @@ describe('plugins/builders/jenkins', function() {
         changesetType: 'change'
       };
       instance.addConfig(httpPayload);
+      expect(infoStub).to.have.been.calledOnce;
       expect(_createCfgPlStub).to.have.been.calledOnce;
       expect(instance.config.projects.new_repo).to.exist;
       expect(instance.config.projects.new_repo).to.deep.equal({
@@ -222,10 +224,11 @@ describe('plugins/builders/jenkins', function() {
   });
 
   describe('#removeConfig', function() {
-    var httpPayload, debugSpy, _createCfgPlStub;
+    var httpPayload, infoStub, debugStub, _createCfgPlStub;
 
     beforeEach(function() {
-      debugSpy = sinonSandbox.spy(instance, 'debug');
+      infoStub = sinonSandbox.stub(instance, 'info');
+      debugStub = sinonSandbox.stub(instance, 'debug');
       httpPayload = {
         repository: 'test_repo_string',
         changesetType: 'repo'
@@ -253,6 +256,7 @@ describe('plugins/builders/jenkins', function() {
 
     it('deletes configs', function() {
       instance.removeConfig(httpPayload);
+      expect(infoStub).to.have.been.calledOnce;
       expect(_createCfgPlStub).to.have.been.calledOnce;
       expect(instance.config.projects.test_repo_string).to.equal(undefined);
     });
