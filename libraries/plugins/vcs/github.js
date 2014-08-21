@@ -223,6 +223,37 @@ module.exports = require('../plugin').extend({
     this._api.authenticate(this.config.auth);
   },
 
+  addConfig: function(pl) {
+    if (~this.config.repos.indexOf(pl.repository)) {
+      throw pl.repository + ' already a tracked repo';
+    }
+    this.info('adding repo', pl.repository);
+    this.config.repos.push(pl.repository);
+
+    return this._createConfigPayload();
+  },
+
+  removeConfig: function(pl) {
+    if (pl.changesetType !== 'repo') {
+      throw 'can only remove repos, requested to remove ' + pl.changesetType;
+    }
+    if (!~this.config.repos.indexOf(pl.repository)) {
+      throw 'github repo not in config: ' + pl.repository;
+    }
+    this.info('removing repo', pl.repository);
+    this.config.repos.splice(this.config.repos.indexOf(pl.repository), 1);
+
+    return this._createConfigPayload();
+  },
+
+  updateConfig: function(pl) {
+    this.debug(
+      'request to update received, redirecting to "add"',
+      this.logForObject(pl)
+    );
+    return this.addConfig(pl);
+  },
+
   /**
    * Validates that a given payload is ok to parse / use, returns it
    *
@@ -297,6 +328,8 @@ module.exports = require('../plugin').extend({
   /**
    * Iterates over the configured list of repositories and uses
    * the GitHub API to check each one for pull requests.
+   *
+   * TODO: OHHHH MY GODDDD WHYYY
    *
    * @method pollRepos
    */
