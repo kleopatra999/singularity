@@ -12,17 +12,37 @@ module.exports = {
   build: {
     plugin: 'jenkins',
     jenkins: {
-      method: 'hooks',
-      projects: [],
-      push_projects: []
+      protocol: 'http',
+      host: 'localhost:8080',
+      auth: {
+        user: 'jenkins',
+        password: 'password',
+        project_token: 'token'
+      },
+      projects: []
     }
   },
   db: {},
   vcs: {
     plugin: 'github',
     github: {
-      method: 'hooks',
+      ignore_statuses: false,
+      auth: {
+        token: false,
+        type: 'oauth',
+        username: ''
+      },
       repos: []
+    }
+  },
+  publisher: {
+    plugin: 'github',
+    github: {
+      auth: {
+        token: false,
+        type: 'oauth',
+        username: ''
+      }
     }
   },
   cache: {
