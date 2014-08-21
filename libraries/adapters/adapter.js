@@ -227,6 +227,15 @@ module.exports = require('../event_reactor').extend({
       'propagating config request to plugins',
       this.logForObject(data)
     );
-    this.executeInPlugins(propagateConfig, data);
+    this.executeInPlugins(propagateConfig, data)
+    .then(function(pluginConfigs) {
+      pluginConfigs.forEach(function(configMeta) {
+        if (!configMeta.plugin || !configMeta.config) {
+          return;
+        }
+        configMeta.adapter = this.name;
+        this.publishToChannel(configMeta, 'config', 'update');
+      }, this);
+    }.bind(this));
   }
 });
