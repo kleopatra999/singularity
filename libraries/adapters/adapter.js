@@ -191,6 +191,12 @@ module.exports = require('../event_reactor').extend({
       })
     )
     .then(q.all)
+    // filter out error / invalid / null responses from plugins
+    .then(function(pluginConfigs) {
+      return pluginConfigs.filter(function(config) {
+        return !!config;
+      });
+    })
     .catch(function(err) {
       this.error(err);
       return [];
