@@ -1,9 +1,37 @@
 "use strict";
 
-var postal = require('postal'),
-    q = require('q'),
+var q = require('q'),
     path = require('path'),
-    fs = require('fs');
+    fs = require('fs'),
+    configMethodMap = {
+        DELETE: 'removeConfig',
+        POST: 'addConfig',
+        PUT: 'updateConfig'
+    };
+
+function getPluginConfigMethod(httpPayload) {
+  if (!httpPayload.method) {
+    throw 'config http payload has no method';
+  }
+  if (!configMethodMap[httpPayload.method]) {
+    throw 'no plugin method mapped to method: ' + httpPayload.method;
+  }
+  return configMethodMap[httpPayload.method];
+}
+
+/**
+ * MUST BIND `this`
+ * `this` should be a plugin!
+ * This function is meant to be used in the context of a plugin!
+ * See executeInPlugins & _handleConfigRequest
+ */
+function propagateConfig(httpPayload) {
+  return q(httpPayload)
+  .then(getPluginConfigMethod)
+  .then(function(callback) {
+    return this[callback].call(this, httpPayload);
+  }.bind(this));
+}
 
 /**
  * MUST BIND `this`
@@ -74,16 +102,13 @@ function loadFromPath(plugin, path, config) {
   var Klass = require(path),
   instance = new Klass(config);
   instance.log = this.log;
+  // to help with logging
+  instance.objectType = this.name;
   this.plugins.push(instance);
 }
 
-module.exports = require('../vent').extend({
-  channel: undefined,
+module.exports = require('../event_reactor').extend({
   objectType: 'adapter',
-
-  setChannel: function(channelName) {
-    this.channel = postal.channel(channelName);
-  },
 
   /**
    * {@inheritDoc}
@@ -97,22 +122,8 @@ module.exports = require('../vent').extend({
     this._super(option);
     this.plugins = [];
     this.executeInPlugins = this.executeInPlugins.bind(this);
-    this.publishPayload = this.publishPayload.bind(this);
-    this.setChannel = this.setChannel.bind(this);
+    this._handleConfigRequest = this._handleConfigRequest.bind(this);
     this.setChannel(this.name);
-  },
-
-  publishPayload: function(payload) {
-    if (!payload) {
-      this.debug('no payload given, ignoring');
-      return;
-    }
-    if (!payload.type) {
-      this.debug('payload has no type!', payload);
-      return;
-    }
-    this.debug('publishing', this.logForObject(payload));
-    this.channel.publish(payload.type, payload);
   },
 
   /**
@@ -180,10 +191,20 @@ module.exports = require('../vent').extend({
       })
     )
     .then(q.all)
+    // filter out error / invalid / null responses from plugins
+    .then(function(pluginConfigs) {
+      return pluginConfigs.filter(function(config) {
+        return !!config;
+      });
+    })
     .catch(function(err) {
       this.error(err);
       return [];
     }.bind(this));
+  },
+
+  registerDefaultTriggers: function() {
+    this._registerTrigger('config', 'request.*', this._handleConfigRequest);
   },
 
   /**
@@ -199,5 +220,22 @@ module.exports = require('../vent').extend({
     return Object.keys(cfg).filter(function(key) {
       return key !== 'plugin';
     });
+  },
+
+  _handleConfigRequest: function(data) {
+    this.debug(
+      'propagating config request to plugins',
+      this.logForObject(data)
+    );
+    this.executeInPlugins(propagateConfig, data)
+    .then(function(pluginConfigs) {
+      pluginConfigs.forEach(function(configMeta) {
+        if (!configMeta.plugin || !configMeta.config) {
+          return;
+        }
+        configMeta.adapter = this.name;
+        this.publishToChannel(configMeta, 'config', 'update');
+      }, this);
+    }.bind(this));
   }
 });

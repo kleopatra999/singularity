@@ -10,7 +10,7 @@ chai.use(require('sinon-chai'));
 chai.use(require('chai-as-promised'));
 
 describe('plugins/vcs/github', function() {
-  var instance, logDebugSpy, sinonSandbox, pluginConfig;
+  var instance, logDebugSpy, sinonSandbox, pluginConfig, repo = 'real_repo';
 
   beforeEach(function(done) {
     pluginConfig = {
@@ -21,7 +21,8 @@ describe('plugins/vcs/github', function() {
         token: 'my_token',
         type: 'oauth',
         username: 'my_ci_user'
-      }
+      },
+      repos: [repo]
     };
     instance = new Plugin(pluginConfig);
     sinonSandbox = sinon.sandbox.create();
@@ -223,6 +224,68 @@ describe('plugins/vcs/github', function() {
           return expect(payload).to.deep.equal(require('./test_change')());
         });
       });
+    });
+  });
+
+  describe('#addConfig', function() {
+    var httpPayload, infoStub, debugStub, _createCfgPlStub;
+
+    beforeEach(function() {
+      infoStub = sinonSandbox.stub(instance, 'info');
+      debugStub = sinonSandbox.stub(instance, 'debug');
+      _createCfgPlStub = sinonSandbox.stub(instance, '_createConfigPayload');
+    });
+
+    it('throws when repo is already being tracked', function() {
+      httpPayload = { repository: repo };
+      expect(function() {
+        instance.addConfig(httpPayload);
+      }).to.throw(/already a tracked repo/);
+      expect(_createCfgPlStub).to.not.have.been.called;
+      expect(instance.config.repos).to.contain(repo);
+    });
+
+    it('actually updates config', function() {
+      httpPayload = { repository: 'new_repo' };
+      instance.addConfig(httpPayload);
+      expect(infoStub).to.have.been.calledOnce;
+      expect(_createCfgPlStub).to.have.been.calledOnce;
+      expect(instance.config.repos).to.contain('new_repo');
+    });
+  });
+
+  describe('#removeConfig', function() {
+    var httpPayload, infoStub, debugStub, _createCfgPlStub;
+
+    beforeEach(function() {
+      infoStub = sinonSandbox.stub(instance, 'info');
+      debugStub = sinonSandbox.stub(instance, 'debug');
+      _createCfgPlStub = sinonSandbox.stub(instance, '_createConfigPayload');
+      httpPayload = {
+        repository: repo,
+        changesetType: 'repository'
+      };
+    });
+
+    it('throws when non-repo changesetType received', function() {
+      expect(function() {
+        instance.removeConfig({ changesetType: 'foo' });
+      })
+      .to.throw(/can only remove repos/);
+    });
+
+    it('throws when repo DNE', function() {
+      expect(function() {
+        instance.removeConfig({ changesetType: 'repository', repository: 'foo' });
+      })
+      .to.throw(/repo not in config/);
+    });
+
+    it('deletes configs', function() {
+      instance.removeConfig(httpPayload);
+      expect(infoStub).to.have.been.calledOnce;
+      expect(_createCfgPlStub).to.have.been.calledOnce;
+      expect(instance.config.repos).to.not.contain(repo);
     });
   });
 });

@@ -229,6 +229,39 @@ module.exports = require('../plugin').extend({
     });
   },
 
+  addConfig: function(pl) {
+    if (this.config.projects[pl.repository]) {
+      this.debug(
+        'project for repo already exists, attempting to update',
+        { repository: pl.repository }
+      );
+      return this.updateConfig(pl);
+    }
+    this.config.projects[pl.repository] = {};
+    this.config.projects[pl.repository][pl.changesetType] = {};
+    this.config.projects[pl.repository][pl.changesetType].project = pl.project;
+    this.info(
+      'added config',
+      this.config.projects[pl.repository],
+      { repository: pl.repository}
+    );
+
+    return this._createConfigPayload();
+  },
+
+  removeConfig: function(pl) {
+    if (pl.changesetType !== 'repository') {
+      throw 'feature not supported: removing ' + pl.changesetType + ' configs';
+    }
+    if (!this.config.projects[pl.repository]) {
+      throw 'No config found for repo: ' + pl.repository;
+    }
+    this.info('removing config', this.config.projects[pl.repository]);
+    delete this.config.projects[pl.repository];
+
+    return this._createConfigPayload();
+  },
+
   /**
    * Reads an httpPayload from the notification-plugin
    * Maps the status of the payload to an internally recognized status

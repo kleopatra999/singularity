@@ -20,6 +20,7 @@ module.exports = createPayload = function(event, request) {
   .setName(event)
   .appendData('__headers', request.headers)
   .appendData('type', 'http')
+  .appendData('method', request.method)
   .validate()
   .payload();
 };

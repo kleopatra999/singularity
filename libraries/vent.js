@@ -1,7 +1,6 @@
 "use strict";
 
 var winston = require('winston'),
-    stackTrace = require('stack-trace'),
     logger = new winston.Logger({
       transports: [
         new (winston.transports.Console)()
@@ -13,18 +12,16 @@ function logPrepend(type, name) {
   return '[' + type + '.' + name + '] ';
 }
 
-// vent: something turns a bunch of knobs
-// ...and things just keep coming out
-// ...of all the...holes...? :|
 module.exports = require('nbd/Class').extend({
   init: function(option) {
     if (!this.objectType) {
       throw Error('objectType must be assigned to this object');
     }
     if (!this.name) {
-      throw 'No adapter name defined';
+      throw 'No object name defined';
     }
-    this.config = option;
+    // yes, I want a deep copy, not a friggen reference
+    this.config = JSON.parse(JSON.stringify(option || {}));
     this.log = this.log || logger;
     this.info = this.info.bind(this);
     this.debug = this.debug.bind(this);
@@ -54,11 +51,6 @@ module.exports = require('nbd/Class').extend({
 
   error: function() {
     this.log.error.apply(this.log, this.formatLogs(arguments));
-    var trace = stackTrace.get();
-    console.log('\t========= StackTrace ========');
-    for (var i = 0; i < trace.length; ++i) {
-      console.log('\t' + trace[i].getFileName() + ':' + trace[i].getLineNumber());
-    }
   },
 
   logForObject: function(obj) {

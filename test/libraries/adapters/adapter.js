@@ -12,6 +12,10 @@ var TestAdapter = Adapter.extend({
   name: 'test_adapter'
 });
 
+var testCallback = function() {
+  return this.method();
+};
+
 describe('Adapter', function() {
   var instance, sinonSandbox, errorStub, debugStub;
 
@@ -26,6 +30,51 @@ describe('Adapter', function() {
   afterEach(function(done) {
     sinonSandbox.restore();
     done();
+  });
+
+  describe('#executeInPlugins', function() {
+    it('does nothing when no plugins attached', function() {
+      return expect(instance.executeInPlugins(testCallback, {}))
+      .to.eventually.be.fulfilled
+      .then(function(ret) {
+        expect(ret).to.deep.equal([]);
+        expect(errorStub).to.have.been.calledOnce;
+        expect(errorStub).to.have.been.calledWithMatch(/no plugins attached/);
+      });
+    });
+
+    it('resolves with empty array when plugin errors', function() {
+      var testError = 'this is a test error fool',
+          plugin = {
+            method: function() { throw testError; },
+            error: function() {}
+          },
+          pluginErrSpy = sinonSandbox.spy(plugin, 'error');
+      instance.plugins.push(plugin);
+      return expect(instance.executeInPlugins(testCallback, {}))
+      .to.eventually.be.fulfilled
+      .then(function(ret) {
+        expect(ret).to.deep.equal([]);
+        expect(pluginErrSpy).to.have.been.called;
+        expect(errorStub).to.not.have.been.called;
+      });
+    });
+
+    it('resolves with plugin results', function() {
+      var plugin = {
+            method: function() { return {}; },
+            error: function() {}
+          },
+          pluginErrSpy = sinonSandbox.spy(plugin, 'error');
+      instance.plugins.push(plugin);
+      return expect(instance.executeInPlugins(testCallback, {}))
+      .to.eventually.be.fulfilled
+      .then(function(ret) {
+        expect(ret).to.deep.equal([{}]);
+        expect(pluginErrSpy).to.not.have.been.called;
+        expect(errorStub).to.not.have.been.called;
+      });
+    });
   });
 
   describe('#publishPayload', function() {
