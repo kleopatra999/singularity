@@ -263,7 +263,7 @@ describe('plugins/vcs/github', function() {
       _createCfgPlStub = sinonSandbox.stub(instance, '_createConfigPayload');
       httpPayload = {
         repository: repo,
-        changesetType: 'repo'
+        changesetType: 'repository'
       };
     });
 
@@ -276,7 +276,7 @@ describe('plugins/vcs/github', function() {
 
     it('throws when repo DNE', function() {
       expect(function() {
-        instance.removeConfig({ changesetType: 'repo', repository: 'foo' });
+        instance.removeConfig({ changesetType: 'repository', repository: 'foo' });
       })
       .to.throw(/repo not in config/);
     });

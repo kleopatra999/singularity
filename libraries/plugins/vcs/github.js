@@ -234,7 +234,7 @@ module.exports = require('../plugin').extend({
   },
 
   removeConfig: function(pl) {
-    if (pl.changesetType !== 'repo') {
+    if (pl.changesetType !== 'repository') {
       throw 'can only remove repos, requested to remove ' + pl.changesetType;
     }
     if (!~this.config.repos.indexOf(pl.repository)) {

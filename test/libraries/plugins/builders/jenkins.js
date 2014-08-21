@@ -231,7 +231,7 @@ describe('plugins/builders/jenkins', function() {
       debugStub = sinonSandbox.stub(instance, 'debug');
       httpPayload = {
         repository: 'test_repo_string',
-        changesetType: 'repo'
+        changesetType: 'repository'
       };
       _createCfgPlStub = sinonSandbox.stub(
         instance,
@@ -249,7 +249,7 @@ describe('plugins/builders/jenkins', function() {
 
     it('throws when repo DNE', function() {
       expect(function() {
-        instance.removeConfig({ changesetType: 'repo', repository: 'foo' });
+        instance.removeConfig({ changesetType: 'repository', repository: 'foo' });
       })
       .to.throw(/No config found/);
     });

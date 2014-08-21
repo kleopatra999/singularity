@@ -250,7 +250,7 @@ module.exports = require('../plugin').extend({
   },
 
   removeConfig: function(pl) {
-    if (pl.changesetType !== 'repo') {
+    if (pl.changesetType !== 'repository') {
       throw 'feature not supported: removing ' + pl.changesetType + ' configs';
     }
     if (!this.config.projects[pl.repository]) {

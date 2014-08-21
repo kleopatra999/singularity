@@ -20,7 +20,7 @@ function validateFields(request, fields) {
 }
 
 function validateType(type) {
-  if (!~['change', 'proposal'].indexOf(type)) {
+  if (!~['change', 'proposal', 'repository'].indexOf(type)) {
     throw 'Unknown changeset type: ' + type;
   }
 }
