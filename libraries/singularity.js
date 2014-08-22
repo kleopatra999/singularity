@@ -1,4 +1,5 @@
-var EventMapper = require('./event_mapper'),
+var Config = require('./config'),
+    EventMapper = require('./event_mapper'),
     Receiver = require('./receiver'),
     q = require('q'),
     app = require('flatiron').app,
@@ -65,9 +66,11 @@ function appUsePlugin(file, cfg) {
 
 var Singularity = require('nbd/Class').extend({
   init: function() {
-    app.config.defaults(require('./config'));
+    // do this first to init log
+    app.config.defaults(Config.defaults());
     app.init();
     this.log = app.log.get('console');
+    this.config = new Config(app.config.get());
     this.eventMapper = new EventMapper();
     this.receiver = new Receiver();
   },

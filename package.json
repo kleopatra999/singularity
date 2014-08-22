@@ -19,7 +19,8 @@
     "range_check": "0.0.4",
     "request": ">=2.9.203",
     "winston": ">=0.6.2",
-    "stack-trace": "~0.0.9"
+    "stack-trace": "~0.0.9",
+    "rwlock": "4.0.0"
   },
   "devDependencies": {
     "chai": "~1.9",
