@@ -42,8 +42,9 @@ module.exports = require('./core_component').extend({
   name: 'configuration',
 
   init: function(configs) {
+    configs = configs || {};
     this._super(configs);
-    this.config = configs;
+    this.config = JSON.parse(JSON.stringify(configs));
     this.lock = lock;
     this.fs = fs;
     this._registerTrigger('config', 'update', writeConfig.bind(this));
