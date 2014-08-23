@@ -4,6 +4,7 @@ var postal = require('postal'),
     stackTrace = require('stack-trace');
 
 module.exports = require('./vent').extend({
+  // where this object publishes to by default
   channel: undefined,
 
   /**
@@ -14,6 +15,7 @@ module.exports = require('./vent').extend({
     this._super(option);
     this.publishPayload = this.publishPayload.bind(this);
     this.setChannel = this.setChannel.bind(this);
+    this.postal = postal;
     this._registerTrigger = this._registerTrigger.bind(this);
   },
 
@@ -23,19 +25,15 @@ module.exports = require('./vent').extend({
 
   publishToChannel: function(payload, channel, subject) {
     var trace = stackTrace.get();
+    postal.publish({channel: channel, topic: subject, data: payload});
     this.debug(
-      'internal publish trigger',
+      'published event',
       {
           channel: channel,
-          subject: subject,
+          topic: subject,
           origin: trace[1].getFileName() + ':' + trace[1].getLineNumber()
       }
     );
-    postal.publish({
-        channel: channel,
-        subject: subject,
-        data: payload
-    });
   },
 
   publishPayload: function(payload) {
@@ -47,24 +45,20 @@ module.exports = require('./vent').extend({
       this.debug('payload has no type!', payload);
       return;
     }
-    this.debug('publishing', this.logForObject(payload));
+    this.debug('published internal event', this.logForObject(payload));
     this.channel.publish(payload.type, payload);
   },
 
   _registerTrigger: function(channel, subject, callback) {
     var trace = stackTrace.get();
+    postal.subscribe({channel: channel, topic: subject, callback: callback});
     this.debug(
-      'registering internal subscription',
+      'registered trigger',
       {
           channel: channel,
-          subject: subject,
+          topic: subject,
           origin: trace[1].getFileName() + ':' + trace[1].getLineNumber()
       }
     );
-    postal.subscribe({
-      channel: channel,
-      topic: subject,
-      callback: callback
-    });
   }
 });
