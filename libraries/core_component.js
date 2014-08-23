@@ -1,9 +1,9 @@
 var app = require('flatiron').app;
 
 /**
- * @module EventMapper
+ * @module core_component
  */
-module.exports = require('./vent').extend({
+module.exports = require('./event_reactor').extend({
   objectType: 'core_component',
 
   init: function(option) {

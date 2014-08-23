@@ -234,7 +234,7 @@ module.exports = require('../event_reactor').extend({
           return;
         }
         configMeta.adapter = this.name;
-        this.publishToChannel(configMeta, 'config', 'update');
+        this.publishToChannel(configMeta, 'config', 'updates');
       }, this);
     }.bind(this));
   }

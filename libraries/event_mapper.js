@@ -1,6 +1,5 @@
 var q = require('q'),
-    app = require('flatiron').app,
-    postal = require('postal');
+    app = require('flatiron').app;
 
 /**
  * Iterate through an array of postal envelopes & publish
@@ -9,8 +8,10 @@ var q = require('q'),
  */
 function publishEvents(events) {
   events.forEach(function(event) {
-    postal.publish(event);
-  });
+    // from the event_reactor object
+    // TODO: has to be a cleaner way to do this
+    this.postal.publish(event);
+  }, this);
 }
 
 /**
@@ -45,16 +46,13 @@ function packageMeta(meta) {
  * @return {Object} A promise
  */
 function createTrigger(trigger) {
-  this.debug('[trigger.add]', trigger);
-  var channelObj = postal.channel(trigger.channel),
-  callback = function(data, envelope) {
+  this._registerTrigger(trigger.channel, trigger.topic, function(data, envelope) {
     this.debug('[channel.topic -> adapter.callback]', trigger);
-    q.resolve(data)
+    return q.resolve(data)
     .then(app[trigger.adapter][trigger.callback].bind(app[trigger.adapter]))
     .catch(this.error)
     .done();
-  }.bind(this);
-  channelObj.subscribe(trigger.topic, callback);
+  }.bind(this));
 }
 
 /**
@@ -87,7 +85,7 @@ module.exports = require('./core_component').extend({
 
   mapEvent: function(data) {
     return packageMeta(data)
-    .then(publishEvents);
+    .then(publishEvents.bind(this));
   },
 
   addTrigger: function(trigger) {
