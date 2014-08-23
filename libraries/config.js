@@ -47,58 +47,6 @@ module.exports = require('./core_component').extend({
     this.config = JSON.parse(JSON.stringify(configs));
     this.lock = lock;
     this.fs = fs;
-    this._registerTrigger('config', 'update', writeConfig.bind(this));
+    this._registerTrigger('config', 'updates', writeConfig.bind(this));
   }
 });
-
-module.exports.defaults = function() {
-  return {
-    port: 8080,
-    log: {
-      console: {
-        level: 'info',
-        colorize: false
-      }
-    },
-    build: {
-      plugin: 'jenkins',
-      jenkins: {
-        protocol: 'http',
-        host: 'localhost:8080',
-        auth: {
-          user: 'jenkins',
-          password: 'password',
-          project_token: 'token'
-        },
-        projects: []
-      }
-    },
-    db: {},
-    vcs: {
-      plugin: 'github',
-      github: {
-        ignore_statuses: false,
-        auth: {
-          token: false,
-          type: 'oauth',
-          username: ''
-        },
-        repos: []
-      }
-    },
-    publisher: {
-      plugin: 'github',
-      github: {
-        auth: {
-          token: false,
-          type: 'oauth',
-          username: ''
-        }
-      }
-    },
-    cache: {
-      max: 64,
-      maxAge: 60 * 1000
-    }
-  };
-}
