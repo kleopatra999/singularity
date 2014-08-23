@@ -2,7 +2,8 @@
 
 var ReadWriteLock = require('rwlock'),
     fs = require('fs'),
-    lock = new ReadWriteLock();
+    lock = new ReadWriteLock(),
+    q = require('q');
 
 function validateConfigMeta(meta) {
   return q.all(
@@ -24,7 +25,7 @@ function writeConfig(configMeta) {
           plugin = configMeta.plugin,
           writeLoc = this.config.cacheConfig || 'config.json.cache';
       this.config[adapter][plugin] = configMeta.config;
-      this.fs.writeSync(writeLoc, JSON.stringify(this.config));
+      this.fs.writeFileSync(writeLoc, JSON.stringify(this.config));
       this.debug(
         'wrote cfg to ' + writeLoc,
         { adapter: adapter, plugin: plugin }
