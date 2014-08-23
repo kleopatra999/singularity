@@ -1,4 +1,5 @@
 {
+    "cacheConfig": "path/to/cached/config/file",
     "log": {
         "console": {
             "level": "debug",
