@@ -232,7 +232,12 @@ describe('plugins/builders/jenkins', function() {
       expect(_createCfgPlStub).to.have.been.calledOnce;
       expect(instance.config.projects.new_repo).to.exist;
       expect(instance.config.projects.new_repo).to.deep.equal({
-        change: { project: 'new_repo_project' }
+        change: [
+            {
+                rules: {base_ref: /^master$/},
+                project: 'new_repo_project'
+            }
+        ]
       });
     });
   });

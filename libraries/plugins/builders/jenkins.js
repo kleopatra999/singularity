@@ -258,13 +258,25 @@ module.exports = require('../plugin').extend({
       );
       return this.updateConfig(pl);
     }
+    var project = {
+      project: pl.project
+    };
+    if (pl.changesetType === 'change') {
+      var rules = this.config.default_rules || {base_ref: /^master$/};
+      if (pl.rules) {
+        rules = JSON.parse(pl.rules);
+      }
+      project.rules = rules;
+    }
+
     this.config.projects[pl.repository] = {};
-    this.config.projects[pl.repository][pl.changesetType] = {};
-    this.config.projects[pl.repository][pl.changesetType].project = pl.project;
+    this.config.projects[pl.repository][pl.changesetType] = [];
+    this.config.projects[pl.repository][pl.changesetType].push(project);
+
     this.info(
       'added config',
-      this.config.projects[pl.repository],
-      { repository: pl.repository}
+      this.config.projects[pl.repository][pl.changesetType],
+      { repository: pl.repository }
     );
 
     return this._createConfigPayload();
