@@ -12,6 +12,14 @@ var request = require('request'),
     buildPayloadFromVcs,
     createJobParams;
 
+function matchesRegex(thing, regex) {
+  return String(thing).match(new RegExp(String(regex)));
+}
+
+function ruleMatch(field, rule) {
+  return !!(field === rule || matchesRegex(field, rule));
+}
+
 /**
  * Utility fx that takes a string or object & return name of an object
  *
@@ -53,12 +61,24 @@ function getRepoProjects(repo, type, config) {
     return [
         {
             project: config[repo],
-            project_token: repoProjectToken || masterToken
+            project_token: repoProjectToken || masterToken,
+            rules: false
         }
     ];
   }
 
   if (!config[repo][type]) {
+    if (config[repo].project) {
+      var token = config[repo].project_token || repoProjectToken || masterToken,
+          rules = config[repo].rules ? JSON.parse(JSON.stringify(config[repo].rules)) : false;
+      return [
+          {
+              project: config[repo].project,
+              project_token: token,
+              rules: rules
+          }
+      ];
+    }
     throw 'no ' + type + ' project(s) associated with ' + repo;
   }
 
@@ -71,7 +91,8 @@ function getRepoProjects(repo, type, config) {
   return config[repo][type].map(function(obj) {
     return {
         project: getProjectFromObject(obj),
-        project_token: obj.project_token || repoProjectToken || masterToken
+        project_token: obj.project_token || repoProjectToken || masterToken,
+        rules: obj.rules
     };
   });
 }
@@ -352,7 +373,23 @@ module.exports = require('../plugin').extend({
     .spread(getRepoProjects)
     .then(function(projects) {
       return q.all(
-        projects.map(function(project) {
+        projects.filter(function(project) {
+          if (!project.rules) {
+            return project;
+          }
+          return Object.keys(project.rules).every(function(field) {
+            if (!vcsPayload[field]) {
+              this.debug('vcsPayload did not contain field: ' + field);
+              return false;
+            }
+            var matches = ruleMatch(vcsPayload[field], project.rules[field]);
+            if (!matches) {
+              this.debug('not building vcsPayload', this.logForObject(project.rules));
+            }
+            return matches;
+          }, this);
+        }, this)
+        .map(function(project) {
           return this._buildProject(project, vcsPayload);
         }, this)
       );
