@@ -50,6 +50,20 @@ describe('plugins/builders/jenkins', function() {
                         project_token: 'project_token'
                     }
                 ]
+            },
+            test_repo_rules: {
+                project: 'single_object_rule',
+                rules: {
+                    // TODO: figure out why regexp objects don't work
+                    base_ref: '^master.*$'
+                }
+            },
+            test_repo_string_rules: {
+                project: 'single_object_rule',
+                rules: {
+                    // TODO: figure out why regexp objects don't work
+                    base_ref: 'string_yo'
+                }
             }
         }
     };
@@ -218,7 +232,12 @@ describe('plugins/builders/jenkins', function() {
       expect(_createCfgPlStub).to.have.been.calledOnce;
       expect(instance.config.projects.new_repo).to.exist;
       expect(instance.config.projects.new_repo).to.deep.equal({
-        change: { project: 'new_repo_project' }
+        change: [
+            {
+                rules: {base_ref: /^master$/},
+                project: 'new_repo_project'
+            }
+        ]
       });
     });
   });
@@ -318,8 +337,14 @@ describe('plugins/builders/jenkins', function() {
   });
 
   describe('#_buildForVcs', function() {
+    var debugStub;
+
+    beforeEach(function() {
+      debugStub = sinonSandbox.stub(instance, 'debug');
+    });
+
     it('rejects when config has no projects', function(done) {
-    instance = new Plugin({});
+      instance = new Plugin({});
       expect(instance._buildForVcs({}))
       .to.eventually.be.rejectedWith('no projects given in config')
       .notify(done);
@@ -365,7 +390,7 @@ describe('plugins/builders/jenkins', function() {
       });
     });
 
-    it('builds an array of project objects & falls back to global_token', function() {
+    it('builds an array of projects & falls back to global_token', function() {
       var projectCount = 1,
           triggerSpy = sinonSandbox.stub(instance, '_buildProject', function(project, payload) {
             expect(project.project_token).to.eql('global_project_token');
@@ -384,7 +409,7 @@ describe('plugins/builders/jenkins', function() {
       });
     });
 
-    it('builds an array of project objects & falls back to global_token', function() {
+    it('builds an array of projects & falls back to global_token', function() {
       var projectCount = 1,
           triggerSpy = sinonSandbox.stub(
             instance,
@@ -429,6 +454,66 @@ describe('plugins/builders/jenkins', function() {
             {test: 'single_change_project2'}
         ]);
         expect(triggerSpy).to.have.been.calledTwice;
+      });
+    });
+
+    it('does not build project when rule is not vcs field', function() {
+      var triggerSpy = sinonSandbox.stub(instance, '_buildProject', function() {
+        return {test: 'single_string_project'};
+      }),
+      payload = {repo: 'test_repo_rules'};
+
+      return expect(instance._buildForVcs(payload))
+      .to.eventually.be.fulfilled
+      .then(function(result) {
+        expect(result).to.eql([]);
+        expect(triggerSpy).to.have.not.been.called;
+        expect(debugStub).to.have.been.calledWithMatch(/field: base_ref/);
+      });
+    });
+
+    it('does not build project when rule does not match', function() {
+      var triggerSpy = sinonSandbox.stub(instance, '_buildProject', function() {
+        return {test: 'single_string_project'};
+      }),
+      payload = {repo: 'test_repo_rules', base_ref: 'fooobaaaar'};
+
+      return expect(instance._buildForVcs(payload))
+      .to.eventually.be.fulfilled
+      .then(function(result) {
+        expect(result).to.eql([]);
+        expect(triggerSpy).to.have.not.been.called;
+        expect(debugStub).to.have.been.calledWithMatch(/not building/);
+      });
+    });
+
+    it('builds project when rule exactly matches', function() {
+      var triggerSpy = sinonSandbox.stub(instance, '_buildProject', function() {
+        return {test: 'single_string_project'};
+      }),
+      payload = {repo: 'test_repo_string_rules', base_ref: 'string_yo'};
+
+      return expect(instance._buildForVcs(payload))
+      .to.eventually.be.fulfilled
+      .then(function(result) {
+        expect(result).to.deep.eql([{test: 'single_string_project'}]);
+        expect(triggerSpy).to.have.been.calledOnce;
+        expect(debugStub).to.not.have.been.called;
+      });
+    });
+
+    it('builds project when rule regex matches', function() {
+      var triggerSpy = sinonSandbox.stub(instance, '_buildProject', function() {
+        return {test: 'single_string_project'};
+      }),
+      payload = {repo: 'test_repo_rules', base_ref: 'masterfoobar'};
+
+      return expect(instance._buildForVcs(payload))
+      .to.eventually.be.fulfilled
+      .then(function(result) {
+        expect(result).to.deep.eql([{test: 'single_string_project'}]);
+        expect(triggerSpy).to.have.been.calledOnce;
+        expect(debugStub).to.not.have.been.called;
       });
     });
   });
