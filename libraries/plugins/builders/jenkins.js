@@ -135,7 +135,7 @@ function createJobParams(buildPayload, project, vcsPayload) {
       buildId: buildPayload.buildId,
       host: buildPayload.host,
       baseUrl: vcsPayload.repo_url,
-      baseBranch: vcsPayload.base_ref,
+      baseRef: vcsPayload.base_ref,
       forkUrl: vcsPayload.fork_url || '',
       forkRef: vcsPayload.fork_ref || '',
       before: vcsPayload.before || '',
