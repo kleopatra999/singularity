@@ -20,7 +20,10 @@
                 "repo2": {
                     "project_token": "repo2project_token",
                     "change": {
-                        "project": "change_project_for_repo2"
+                        "project": "change_project_for_repo2",
+                        "rules": {
+                          "base_ref": "^refs/heads/master$"
+                        }
                     },
                     "proposal": [
                         {
