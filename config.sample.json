@@ -51,5 +51,14 @@
                 "awsome_org_two/repo_two"
             ]
         }
+    },
+    "publisher": {
+        "github": {
+            "auth": {
+                "username": "CI_USER_GITHUB_NAME",
+                "token": "OAUTH_TOKEN_FOR_CI_USER",
+                "type": "oauth"
+            }
+        }
     }
 }
