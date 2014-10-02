@@ -262,7 +262,7 @@ module.exports = require('../plugin').extend({
       project: pl.project
     };
     if (pl.changesetType === 'change') {
-      var rules = this.config.default_rules || {base_ref: /^master$/};
+      var rules = this.config.default_rules || {base_ref: "^refs/heads/master$"};
       if (pl.rules) {
         rules = JSON.parse(pl.rules);
       }
