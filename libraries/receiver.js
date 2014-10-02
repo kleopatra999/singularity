@@ -16,8 +16,7 @@ function requestWrapper(route) {
     return route(req);
   }),
   writeResponse = function(defaultStatus, meta) {
-    self.res.statusCode = meta.status || defaultStatus;
-    self.res.writeHead(meta.body || meta);
+    self.res.writeHead(meta.status || defaultStatus);
     self.res.write(JSON.stringify(meta.body || meta));
     self.res.end();
   };
