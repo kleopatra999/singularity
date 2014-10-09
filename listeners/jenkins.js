@@ -62,7 +62,10 @@ var Jenkins = function(config, application, idGen, requester) {
   self.application.on('build.trigger', function(job_name, url_options) {
     self.triggerBuild(job_name, url_options, function(error) {
       if (error) {
-        self.application.log.info('Received error from Jenkins when triggering build', { job_name: job_name, url_options: url_options });
+        self.application.log.info(
+          'Received error from Jenkins when triggering build',
+          { job_name: job_name, url_options: url_options }
+        );
       }
     });
   });
@@ -196,10 +199,15 @@ Jenkins.prototype.buildPull = function(pull, number, sha, ssh_url, branch, updat
     };
 
     self.application.log.debug('Updating PR, inserting job', job);
-    self.application.db.updatePull(number, pull.repo, { head: sha, updated_at: updated_at},
-    function() {
-      self.application.db.insertJob(pull, job);
-    });
+    self.application.emit('build.queued', job, pull);
+    self.application.db.updatePull(
+      number,
+      pull.repo,
+      {head: sha, updated_at: updated_at},
+      function() {
+        self.application.db.insertJob(pull, job);
+      }
+    );
   });
 };
 
