@@ -199,13 +199,13 @@ Jenkins.prototype.buildPull = function(pull, number, sha, ssh_url, branch, updat
     };
 
     self.application.log.debug('Updating PR, inserting job', job);
-    self.application.emit('build.queued', job, pull);
     self.application.db.updatePull(
       number,
       pull.repo,
       {head: sha, updated_at: updated_at},
       function() {
         self.application.db.insertJob(pull, job);
+        self.application.emit('build.queued', job, pull);
       }
     );
   });
