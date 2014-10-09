@@ -55,6 +55,10 @@ var GitHub = function(config, application, events) {
     self.processPull(pull);
   });
 
+  self.application.on('build.queued', function(job, pull) {
+    self.createStatus(job.head, config.user, pull.repo, 'pending', false, 'Singularity Build Queued');
+  });
+
   self.application.on('build.started', function(job, pull, build_url) {
     self.createStatus(job.head, config.user, pull.repo, 'pending', build_url, 'Singularity Build Started');
   });
@@ -364,23 +368,32 @@ GitHub.prototype.processPull = function(pull) {
  * @param description {String}
  */
 GitHub.prototype.createStatus = function(sha, user, repo, state, build_url, description) {
-  var self = this, args = arguments;
+  var self = this,
+      args = arguments,
+      status = {
+          user: user,
+          repo: repo,
+          sha: sha,
+          state: state,
+          description: description
+      };
+
+  if (build_url) {
+    status.target_url = build_url;
+  }
+
   self.application.log.info('creating status ' + state + ' for sha ' + sha + ' for build_url ' + build_url);
-  this.api.statuses.create({
-      user: user,
-      repo: repo,
-      sha: sha,
-      state: state,
-      target_url: build_url,
-      description: description
-  },
-  function(error) {
-    if (error) {
-      self.application.log.error(error);
-      self.application.log.error(args);
-      return;
+
+  this.api.statuses.create(
+    status,
+    function(error) {
+      if (error) {
+        self.application.log.error(error);
+        self.application.log.error(args);
+        return;
+      }
     }
-  });
+  );
 };
 
 /**
