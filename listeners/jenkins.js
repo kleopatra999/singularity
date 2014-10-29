@@ -192,11 +192,16 @@ Jenkins.prototype.buildPull = function(pull, number, sha, ssh_url, branch, updat
     }
 
     var job = {
-      id: job_id,
-      status: 'new',
-      result: 'BUILDING',
-      head: sha
-    };
+          id: job_id,
+          status: 'new',
+          result: 'BUILDING',
+          head: sha
+        },
+        job_url = url.format({
+          protocol: self.config.protocol,
+          host: self.config.host,
+          pathname: '/job/' + project.name
+        });
 
     self.application.log.debug('Updating PR, inserting job', job);
     self.application.db.updatePull(
@@ -205,7 +210,7 @@ Jenkins.prototype.buildPull = function(pull, number, sha, ssh_url, branch, updat
       {head: sha, updated_at: updated_at},
       function() {
         self.application.db.insertJob(pull, job);
-        self.application.emit('build.queued', job, pull);
+        self.application.emit('build.queued', job, pull, job_url);
       }
     );
   });

@@ -55,8 +55,8 @@ var GitHub = function(config, application, events) {
     self.processPull(pull);
   });
 
-  self.application.on('build.queued', function(job, pull) {
-    self.createStatus(job.head, config.user, pull.repo, 'pending', false, 'Singularity Build Queued');
+  self.application.on('build.queued', function(job, pull, build_url) {
+    self.createStatus(job.head, config.user, pull.repo, 'pending', build_url, 'Singularity Build Queued');
   });
 
   self.application.on('build.started', function(job, pull, build_url) {
