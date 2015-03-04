@@ -86,7 +86,12 @@ Jenkins.prototype.triggerBuildsForOpenPRs = function(push) {
   var repo_name = push.repository.name,
       params = { limit: -1, repo: repo_name },
       self = this,
-      branch = push.ref.split('/').pop();
+      // to handle branch names such as
+      // "refs/heads/repo/feature-name/part-of-feature"
+      user = self.application.config.plugins.github.user,
+      ref_parts = push.ref.split('/'),
+      ref_start = ref_parts.indexOf(user) + 1,
+      branch = ref_parts.slice(ref_start).join('/');
 
   this.application.db.findRepoPullsByStatuses(params, function(err, pulls) {
     if (err) {
@@ -95,7 +100,7 @@ Jenkins.prototype.triggerBuildsForOpenPRs = function(push) {
     }
 
     pulls.forEach(function(pull) {
-      if (pull.opening_event.base.ref !== branch) {
+      if (pull.opening_event.base.label !== user + ':' + branch) {
         return;
       }
 
