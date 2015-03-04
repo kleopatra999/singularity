@@ -1,17 +1,28 @@
 POST /repos/octocat/example/statuses/1234?access_token=my_token
 host: api.github.com
 content-type: application/json; charset=utf-8
-accept: application/vnd.github.beta+json
+accept: application/vnd.github.v3+json
 body: {\"state\":\"pending\",\"target_url\":null,\"description\":\"my custom message\"}\n
 
 201 HTTP/1.1
 server: GitHub.com
-date: Fri, 27 Jun 2014 16:21:23 GMT
+date: Wed, 04 Mar 2015 22:00:38 GMT
 content-type: application/json; charset=utf-8
-status: 201 Created
-location: https://api.github.com/repos/octocat/example/statuses/1
-x-ratelimit-limit: 5000
-x-ratelimit-remaining: 4999
+content-length: 83
+status: 401 Unauthorized
+x-github-media-type: github.v3; format=json
+x-ratelimit-limit: 60
+x-ratelimit-remaining: 57
+x-ratelimit-reset: 1425509799
+x-xss-protection: 1; mode=block
+x-frame-options: deny
+content-security-policy: default-src 'none'
+access-control-allow-credentials: true
+access-control-expose-headers: ETag, Link, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval
+access-control-allow-origin: *
+x-github-request-id: 4A71A0BA:4CA3:172DA8E:54F78086
+strict-transport-security: max-age=31536000; includeSubdomains; preload
+x-content-type-options: nosniff
 
 {
   "created_at": "2012-07-20T01:19:13Z",
