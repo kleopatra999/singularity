@@ -282,10 +282,10 @@ Jenkins.prototype.pullFound = function(pull) {
 
 /**
  * Validate that a push can be used to trigger a build, given the config
- * @method validatePush
+ * @method pushMapsToJobs
  * @param push {Object}
  */
-Jenkins.prototype.validatePush = function(push) {
+Jenkins.prototype.pushMapsToJobs = function(push) {
   var repo = push.repository.name,
       log_info = { repo: repo, reference: push.ref, head: push.after };
 
@@ -331,7 +331,7 @@ Jenkins.prototype.findPushProjectForRepo = function(repo) {
  * @param push {Object}
  */
 Jenkins.prototype.pushFound = function(push) {
-  if (!this.validatePush(push)) {
+  if (!this.pushMapsToJobs(push)) {
     return;
   }
 

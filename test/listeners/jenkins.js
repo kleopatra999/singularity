@@ -102,7 +102,7 @@ describe('listeners/jenkins', function() {
     });
   });
 
-  describe('validatePush', function() {
+  describe('pushMapsToJobs', function() {
     var unit = this;
 
     beforeEach(function(done) {
@@ -121,7 +121,7 @@ describe('listeners/jenkins', function() {
 
       sinon.stub(test.app.log, 'debug', logSpy);
 
-      expect(instance.validatePush(test.mockPush)).to.be.false;
+      expect(instance.pushMapsToJobs(test.mockPush)).to.be.false;
       expect(logSpy).to.have.been.called;
     });
 
@@ -132,7 +132,7 @@ describe('listeners/jenkins', function() {
       unit.pushProjectSearchStub.returns(null);
       sinon.stub(test.app.log, 'debug', logSpy);
 
-      expect(instance.validatePush(test.mockPush)).to.be.false;
+      expect(instance.pushMapsToJobs(test.mockPush)).to.be.false;
       expect(logSpy).to.have.been.called;
     });
 
@@ -143,7 +143,7 @@ describe('listeners/jenkins', function() {
       unit.pushProjectSearchStub.returns({});
       sinon.stub(test.app.log, 'error', logSpy);
 
-      expect(instance.validatePush(test.mockPush)).to.be.false;
+      expect(instance.pushMapsToJobs(test.mockPush)).to.be.false;
       expect(logSpy).to.have.been.called;
     });
 
@@ -156,7 +156,7 @@ describe('listeners/jenkins', function() {
       sinon.stub(test.app.log, 'error', errorSpy);
       sinon.stub(test.app.log, 'debug', debugSpy);
 
-      expect(instance.validatePush(test.mockPush)).to.be.true;
+      expect(instance.pushMapsToJobs(test.mockPush)).to.be.true;
       expect(errorSpy).to.not.have.been.called;
       expect(debugSpy).to.not.have.been.called;
     });
