@@ -44,6 +44,7 @@ var Jenkins = function(config, application, idGen, requester) {
   });
 
   self.application.on('push.found', function(push) {
+    self.triggerBuildsForOpenPRs(push.repository.name);
     self.pushFound(push);
   });
 
@@ -72,6 +73,30 @@ var Jenkins = function(config, application, idGen, requester) {
 
   self.application.on('process_artifacts', function(job_name, build, pull) {
     self.processArtifacts(job_name, build, pull);
+  });
+};
+
+/**
+ * Retrigger jobs for all pulls associated with a repo
+ *
+ * @method triggerBuildsForOpenPRs
+ * @param pull {String}
+ */
+Jenkins.prototype.triggerBuildsForOpenPRs = function(repo_name) {
+  var params = { limit: 1, repo: repo_name },
+      self = this;
+  this.application.db.findRepoPullsByStatuses(params, function(pulls, err) {
+    if (err) {
+      self.application.log.error("Could not retrigger PR tests for " + repo_name + " : " + err);
+      return;
+    }
+
+    pulls.forEach(function(pull) {
+      pull.opening_event.head.sha = pull.head;
+      pull = pull.opening_event;
+      pull.skip_comments = true;
+      self.application.emit('pull.validated', pull);
+    });
   });
 };
 
