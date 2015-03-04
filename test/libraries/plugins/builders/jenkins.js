@@ -234,7 +234,7 @@ describe('plugins/builders/jenkins', function() {
       expect(instance.config.projects.new_repo).to.deep.equal({
         change: [
             {
-                rules: {base_ref: /^master$/},
+                rules: {base_ref: '^refs/heads/master$'},
                 project: 'new_repo_project'
             }
         ]
