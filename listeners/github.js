@@ -291,7 +291,7 @@ GitHub.prototype.processPull = function(pull) {
 
     var new_pull = false,
         ssh_url = pull.head.repo.ssh_url,
-        branch = pull.head.label.split(':')[1];
+        branch = pull.head.ref;
 
     if (!item) {
       new_pull = true;
