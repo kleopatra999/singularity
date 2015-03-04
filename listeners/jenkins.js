@@ -44,6 +44,7 @@ var Jenkins = function(config, application, idGen, requester) {
   });
 
   self.application.on('push.found', function(push) {
+    self.triggerBuildsForOpenPRs(push);
     self.pushFound(push);
   });
 
@@ -72,6 +73,42 @@ var Jenkins = function(config, application, idGen, requester) {
 
   self.application.on('process_artifacts', function(job_name, build, pull) {
     self.processArtifacts(job_name, build, pull);
+  });
+};
+
+/**
+ * Retrigger jobs for all pulls associated with a repo
+ *
+ * @method triggerBuildsForOpenPRs
+ * @param pull {String}
+ */
+Jenkins.prototype.triggerBuildsForOpenPRs = function(push) {
+  var repo_name = push.repository.name,
+      params = { limit: -1, repo: repo_name },
+      self = this,
+      // to handle branch names such as
+      // "refs/heads/repo/feature-name/part-of-feature"
+      user = self.application.config.plugins.github.user,
+      ref_parts = push.ref.split('/'),
+      ref_start = ref_parts.indexOf(user) + 1,
+      branch = ref_parts.slice(ref_start).join('/');
+
+  this.application.db.findRepoPullsByStatuses(params, function(err, pulls) {
+    if (err) {
+      self.application.log.error("Could not retrigger PR tests for " + repo_name + " : " + err);
+      return;
+    }
+
+    pulls.forEach(function(pull) {
+      if (pull.opening_event.base.label !== user + ':' + branch) {
+        return;
+      }
+
+      pull.opening_event.head.sha = pull.head;
+      pull = pull.opening_event;
+      pull.skip_comments = true;
+      self.application.emit('pull.validated', pull);
+    });
   });
 };
 
@@ -257,10 +294,10 @@ Jenkins.prototype.pullFound = function(pull) {
 
 /**
  * Validate that a push can be used to trigger a build, given the config
- * @method validatePush
+ * @method pushMapsToJobs
  * @param push {Object}
  */
-Jenkins.prototype.validatePush = function(push) {
+Jenkins.prototype.pushMapsToJobs = function(push) {
   var repo = push.repository.name,
       log_info = { repo: repo, reference: push.ref, head: push.after };
 
@@ -306,7 +343,7 @@ Jenkins.prototype.findPushProjectForRepo = function(repo) {
  * @param push {Object}
  */
 Jenkins.prototype.pushFound = function(push) {
-  if (!this.validatePush(push)) {
+  if (!this.pushMapsToJobs(push)) {
     return;
   }
 

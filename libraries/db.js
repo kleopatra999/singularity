@@ -103,16 +103,18 @@ exports.init = function(config, log) {
 
   MongoDB.prototype.findRepoPullsByStatuses = function(params, callback) {
     var limit = parseInt(params.limit) || 8,
-        repo = parseInt(params.repo),
+        repo = params.repo,
         sort = params.sort && ('ascending' === params.sort) ? 1 : -1,
         statuses = params.statuses ? params.statuses.split(',') : ['open'];
 
-    if (!!!repo) {
+    if (!repo) {
       callback('no repo given, or invalid value', null);
       return;
     }
 
-    this.connection.pulls.find({ repo_id: repo, status: { $in: statuses } }).sort([['_id', sort]]).limit(limit, callback);
+    this.connection.pulls.find({ repo: repo, status: { $in: statuses } })
+                         .sort([['_id', sort]])
+                         .limit(limit, callback);
   };
 
   MongoDB.prototype.findByJobStatus = function(statuses, callback) {
