@@ -44,7 +44,7 @@ var Jenkins = function(config, application, idGen, requester) {
   });
 
   self.application.on('push.found', function(push) {
-    self.triggerBuildsForOpenPRs(push.repository.name);
+    self.triggerBuildsForOpenPRs(push);
     self.pushFound(push);
   });
 
@@ -82,16 +82,23 @@ var Jenkins = function(config, application, idGen, requester) {
  * @method triggerBuildsForOpenPRs
  * @param pull {String}
  */
-Jenkins.prototype.triggerBuildsForOpenPRs = function(repo_name) {
-  var params = { limit: 1, repo: repo_name },
-      self = this;
-  this.application.db.findRepoPullsByStatuses(params, function(pulls, err) {
+Jenkins.prototype.triggerBuildsForOpenPRs = function(push) {
+  var repo_name = push.repository.name,
+      params = { limit: -1, repo: repo_name },
+      self = this,
+      branch = push.ref.split('/').pop();
+
+  this.application.db.findRepoPullsByStatuses(params, function(err, pulls) {
     if (err) {
       self.application.log.error("Could not retrigger PR tests for " + repo_name + " : " + err);
       return;
     }
 
     pulls.forEach(function(pull) {
+      if (pull.opening_event.base.ref !== branch) {
+        return;
+      }
+
       pull.opening_event.head.sha = pull.head;
       pull = pull.opening_event;
       pull.skip_comments = true;
