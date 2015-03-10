@@ -89,7 +89,7 @@ Jenkins.prototype.triggerBuildsForOpenPRs = function(push) {
       // to handle branch names such as
       // "refs/heads/repo/feature-name/part-of-feature"
       user = self.application.config.plugins.github.user,
-      ref_parts = push.ref.split('/'),
+      ref_parts = push.ref.replace(/^refs\/heads\//, '').split('/'),
       ref_start = ref_parts.indexOf(user) + 1,
       branch = ref_parts.slice(ref_start).join('/');
 
@@ -99,10 +99,17 @@ Jenkins.prototype.triggerBuildsForOpenPRs = function(push) {
       return;
     }
 
+    self.application.log.debug("Looking for PRs to retrigger tests for " + repo_name);
+
     pulls.forEach(function(pull) {
       if (pull.opening_event.base.label !== user + ':' + branch) {
+        self.application.log.debug(
+          pull.opening_event.base.label + "!== " + user + ':' + branch + ", skipping retest"
+        );
         return;
       }
+
+      self.application.log.debug(pull.opening_event.base.label + " updated, retesting " + pull.number);
 
       pull.opening_event.head.sha = pull.head;
       pull = pull.opening_event;
