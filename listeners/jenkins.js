@@ -93,29 +93,38 @@ Jenkins.prototype.triggerBuildsForOpenPRs = function(push) {
       ref_start = ref_parts.indexOf(user) + 1,
       branch = ref_parts.slice(ref_start).join('/');
 
-  this.application.db.findRepoPullsByStatuses(params, function(err, pulls) {
+  self.application.log.debug("Looking for PRs to retrigger tests for " + repo_name);
+
+  this.application.db.findRepoPullsByStatuses(params, function(err, pull) {
     if (err) {
-      self.application.log.error("Could not retrigger PR tests for " + repo_name + " : " + err);
+      self.application.log.error(
+        "Could not retrigger PR tests for " + repo_name + " : " + err
+      );
       return;
     }
 
-    self.application.log.debug("Looking for PRs to retrigger tests for " + repo_name);
+    if (!pull) {
+      self.application.log.debug("Null PR, or No PRs found for " + repo_name);
+      return;
+    }
 
-    pulls.forEach(function(pull) {
-      if (pull.opening_event.base.label !== user + ':' + branch) {
-        self.application.log.debug(
-          pull.opening_event.base.label + "!== " + user + ':' + branch + ", skipping retest"
-        );
-        return;
-      }
+    if (pull.opening_event.base.label !== user + ':' + branch) {
+      self.application.log.debug(
+        pull.opening_event.base.label + "!== " + user + ':' + branch + ", skipping retest"
+      );
+      return;
+    }
 
-      self.application.log.debug(pull.opening_event.base.label + " updated, retesting " + pull.number);
+    self.application.log.debug(
+      pull.opening_event.base.label +
+      " updated, retesting " +
+      pull.number
+    );
 
-      pull.opening_event.head.sha = pull.head;
-      pull = pull.opening_event;
-      pull.skip_comments = true;
-      self.application.emit('pull.validated', pull);
-    });
+    pull.opening_event.head.sha = pull.head;
+    pull = pull.opening_event;
+    pull.skip_comments = true;
+    self.application.emit('pull.validated', pull);
   });
 };
 
