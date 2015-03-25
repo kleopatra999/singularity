@@ -135,12 +135,15 @@ Jenkins.prototype.triggerBuildsForOpenPRs = function(push) {
  * @param pull {Object}
  * @returns {Object}
  */
-Jenkins.prototype.findUnfinishedJob = function(pull) {
+Jenkins.prototype.findUnfinishedJobs = function(pull) {
+  var jobs = [];
   for (var x in pull.jobs) {
     if (pull.jobs[x].status !== 'finished') {
-      return pull.jobs[x];
+      jobs.push(pull.jobs[x]);
     }
   }
+
+  return jobs;
 };
 
 /**
@@ -460,39 +463,41 @@ Jenkins.prototype.getBuildById = function(project_name, build_id, callback) {
 Jenkins.prototype.checkPRJob = function(pull) {
   var noun,
       self = this,
-      job = self.findUnfinishedJob(pull),
+      jobs = self.findUnfinishedJobs(pull),
       project = self.findProjectByRepo(pull.repo);
 
-  if (!job || !project) {
-    noun = (!job) ? 'job' : 'project';
-    self.application.log.error('No ' + noun + ' for ' + pull.repo + ' on ' + self.config.host);
-    return;
-  }
-
-  self.getBuildById(project.name, job.id, function(err, build) {
-    if (!build) {
+  jobs.forEach(function(job) {
+    if (!job || !project) {
+      noun = (!job) ? 'job' : 'project';
+      self.application.log.error('No ' + noun + ' for ' + pull.repo + ' on ' + self.config.host);
       return;
     }
 
-    if (job.status === 'new') {
-      self.application.db.updatePRJobStatus(job.id, 'started', 'BUILDING', function() {
-        self.application.emit('build.started', job, pull, build.url);
-      });
-    }
-
-    if (job.status === 'finished' || build.building) {
-      return;
-    }
-
-    var event = 'build.' + build.result.toLowerCase().trim(),
-        debugInfo = { event: event, repo: pull.repo, number: pull.number, job: job};
-
-    self.application.log.debug('PR event', debugInfo);
-    self.application.db.updatePRJobStatus(job.id, 'finished', build.result, function() {
-      self.application.emit(event, job, pull, build.url);
-      if (['FAILURE', 'SUCCESS'].indexOf(build.result) !== -1) {
-        self.processArtifacts(project.name, build, pull);
+    self.getBuildById(project.name, job.id, function(err, build) {
+      if (!build) {
+        return;
       }
+
+      if (job.status === 'new') {
+        self.application.db.updatePRJobStatus(job.id, 'started', 'BUILDING', function() {
+          self.application.emit('build.started', job, pull, build.url);
+        });
+      }
+
+      if (job.status === 'finished' || build.building) {
+        return;
+      }
+
+      var event = 'build.' + build.result.toLowerCase().trim(),
+          debugInfo = { event: event, repo: pull.repo, number: pull.number, job: job};
+
+      self.application.log.debug('PR event', debugInfo);
+      self.application.db.updatePRJobStatus(job.id, 'finished', build.result, function() {
+        self.application.emit(event, job, pull, build.url);
+        if (['FAILURE', 'SUCCESS'].indexOf(build.result) !== -1) {
+          self.processArtifacts(project.name, build, pull);
+        }
+      });
     });
   });
 };
