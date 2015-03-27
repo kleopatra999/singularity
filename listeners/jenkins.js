@@ -84,7 +84,19 @@ var Jenkins = function(config, application, idGen, requester) {
  */
 Jenkins.prototype.triggerBuildsForOpenPRs = function(push) {
   var repo_name = push.repository.name,
-      params = { limit: -1, repo: repo_name },
+      job = this.findProjectByRepo(repo_name);
+
+  if (!job) {
+    this.application.log.error("no jobs found for " + repo_name);
+    return;
+  }
+
+  if (!job.retest) {
+    this.application.log.debug(repo_name + " not set for open PR retesting");
+    return;
+  }
+
+  var params = { limit: -1, repo: repo_name },
       self = this,
       // to handle branch names such as
       // "refs/heads/repo/feature-name/part-of-feature"
