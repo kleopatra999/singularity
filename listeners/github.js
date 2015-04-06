@@ -375,6 +375,7 @@ GitHub.prototype.createStatus = function(sha, user, repo, state, build_url, desc
           repo: repo,
           sha: sha,
           state: state,
+          context: 'singularity-ci',
           description: description
       };
 
