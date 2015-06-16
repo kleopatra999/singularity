@@ -1,3 +1,7 @@
+Configuration
+=============
+
+```js
 exports.config = {
   // used to create webhooks. port is appended to this
   // so no trailing slash!
@@ -16,10 +20,9 @@ exports.config = {
       pass: 'password',
       host: 'your_host',
       port: 27017,
-      db: 'mergeatron',
+      db: 'singularity',
       slaveOk: false
-    },
-    collections: [ 'pulls', 'pushes', 'merges' ]
+    }
   },
   plugins: {
     github: {
@@ -60,3 +63,4 @@ exports.config = {
     }
   }
 };
+```
