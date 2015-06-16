@@ -4,14 +4,15 @@
  * All callbacks must have 2 args, err & item
  */
 exports.init = function(config, log) {
-
   if (!config) {
     return null;
   }
 
+  var collections = [ "pulls", "pushes", "merges", "config" ];
+
   var MongoDB = function() {
     this.config = config;
-    this.connection = require('mongojs').connect(config.auth, config.collections);
+    this.connection = require('mongojs').connect(config.auth, collections);
     this.connection.createCollection('config');
   };
 
