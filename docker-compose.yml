@@ -1,0 +1,20 @@
+app:
+    build: .
+    ports:
+        - "8888:8888"
+    links:
+        - db
+        - jenkins
+
+db:
+    image: mongo:3
+    ports:
+        - "27017:27017"
+    command: --smallfiles
+
+jenkins:
+    image: jenkins:1.609.1
+    volumes:
+      - ./jenkins:/var/jenkins_home
+    ports:
+        - "8080:8080"

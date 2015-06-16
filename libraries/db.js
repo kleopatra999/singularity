@@ -4,15 +4,25 @@
  * All callbacks must have 2 args, err & item
  */
 exports.init = function(config, log) {
-
   if (!config) {
     return null;
   }
 
+  var mongojs = require('mongojs');
+  var collections = ["pulls", "pushes", "merges", "config"];
+
   var MongoDB = function() {
     this.config = config;
-    this.connection = require('mongojs').connect(config.auth, config.collections);
-    this.connection.createCollection('config');
+
+    this.creds = (config.auth.user) ?
+                 config.auth.user + ':' + config.auth.pass : '';
+    this.url = (config.auth.port) ?
+               config.auth.host + ':' + config.auth.port : config.auth.host;
+    this.connectionStr = (this.creds.length === 0) ? this.url : this.creds + '@' + this.url;
+    this.connectionStr += '/' + config.auth.db;
+
+    this.connection = mongojs(this.connectionStr, collections);
+    this.connection.createCollection('config', {});
   };
 
   MongoDB.prototype.saveSingularityConfig = function(config, callback) {
