@@ -224,6 +224,9 @@ GitHub.prototype.checkFiles = function(pull) {
 
       file.ranges = [];
       file.reported = [];
+      if (!!!file.blob_url) {
+        return;
+      }
       file.sha = file.blob_url.match(/blob\/([^\/]+)/)[1];
 
       // The GitHub API doesn't return the actual patch when it's exceedingly large
